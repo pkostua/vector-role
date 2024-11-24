@@ -22,6 +22,12 @@ vector-role
 ----------------
 
 -Добавьте роль в зависимости вашего проекта
+
+    - src: git@github.com:pkostua/lighthouse-role.git
+      scm: git
+      version: "0.0.0"
+      name: lighthouse-role    
+
 -Добавьте запуск роли в playbook
 
     - hosts: servers
