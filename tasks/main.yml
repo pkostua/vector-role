@@ -1,0 +1,55 @@
+---
+  - name: Скачать дистрибутив Vector
+    become: true
+    get_url:
+      url: https://packages.timber.io/vector/0.42.0/vector-{{ vector_version }}-x86_64-unknown-linux-musl.tar.gz
+      dest: /tmp/vector.tar.gz
+  - name: Распаковать Vector
+    become: true
+    unarchive:
+      remote_src: true
+      src: /tmp/vector.tar.gz
+      dest: /tmp
+
+  - name: Install binary
+    become: true
+    copy:
+      remote_src: true
+      src: /tmp/vector-x86_64-unknown-linux-musl/bin
+      dest: "{{ vector_install_dir }}"
+
+  - name: Create a symbolic link
+    become: true
+    file:
+      remote_src: true
+      src: "{{ vector_install_dir }}/bin/vector"
+      dest: /usr/bin/vector
+      state: link
+      mode: '0755'
+
+  - name: Создать каталог конфигурации Vector
+    become: true
+    file:
+      path: /etc/vector/
+      state: directory
+
+  - name: Создать файл конфигурации Vector из шаблона
+    become: true
+    template:
+      src: templates/vector_config.j2
+      dest: /etc/vector/vector.yaml
+      mode: '0644'
+    notify: Restart Vector
+
+  - name: Install Binary
+    become: true
+    copy:
+      src: files/vector.service
+      dest: /etc/systemd/system/
+
+  - name: Запустить Vector в фоне
+    become: true
+    systemd:
+      name: vector
+      enabled: yes
+      daemon_reload: yes
